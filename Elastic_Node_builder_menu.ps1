@@ -22,12 +22,19 @@ function Get-Configuration_elasticsearch {
         Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch.bat"
         # make the sleep a loop every 10 secs to print the same message
         # Trying to stop error happening with starting service that doesn't exsist
+        Write-Host ""
         Write-Host "DO NOT WORRY. This is a built in sleep for time for the installation of elasticsearch"
-        start-sleep -s 120
-    
+        start-sleep -s 60
+        Write-Host ""
         Write-Host "Has the Install finished from the cmd.exe window"
         write-host""
-        Read-Host "If so press enter. If NOT do nothing......"
+        $answer = Read-Host "If so, press Enter. If NOT, type 'no' and press Enter..."
+
+        if ($answer -eq "no") {
+            Write-Host "Waiting for 30 seconds..."
+            Start-Sleep -Seconds 30
+        }
+
     
         Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch-service.bat install"
     
@@ -218,10 +225,30 @@ cluster.initial_master_nodes: ["$nodeName"]
 "@
 Get-Configuration_elasticsearch
     
+
+        Write-Host ""
+        Write-Host "Are you ready to continue ?"
+        write-host""
+        $answer = Read-Host "If so, press Enter. If NOT, type 'no' and press Enter..."
+
+        if ($answer -eq "no") {
+            Write-Host "Waiting for 30 seconds..."
+            Start-Sleep -Seconds 30
+        }
     start-process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch-service-tokens create elastic/kibana AuthToken > Token.log"
 
     $InputFile = "$workingDirectory\Token.log"
     $OutputFile = "$workingDirectory\Base43_token.log"
+    
+
+    if (-not (Test-Path -Path $OutputFile -PathType Leaf)) {
+        Write-Host "File does not exist. Creating the file..."
+        New-Item -Path $OutputFile -ItemType File
+        Write-Host "File created."
+    } else {
+        Write-Host "File already exists."
+    }
+
     Write-Host "Setting Configurations for Kibana" -ForegroundColor Cyan
     # Check if the input file exists
     if (Test-Path $InputFile) {
