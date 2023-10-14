@@ -8,6 +8,7 @@ Have either the elasticsearch zip unziped and stored like this C:\elasticsearch-
 #>
 
 using namespace System.Management.Automation.Host
+
 function Get-Configuration_elasticsearch {
     $foldername =  "elasticsearch-8.10.2"
         $yamlFilePath = "$ENV:SystemDrive\$foldername\config\elasticsearch.yml"
@@ -68,7 +69,32 @@ function Get-download_Kibana{
     $a  = Get-ChildItem $folder
     Copy-Item "$folder\$a" -Recurse -Destination "$env:SystemDrive\$a" -ErrorAction SilentlyContinue | Out-Null # This Kina fixes the issue. Failing to copy files to new location. Non-issue
 }
+function Get-cleanup {
+    Remove-Item -Path "kibana-8.10.2-windows-x86_64.zip" -ErrorAction SilentlyContinue | Out-Null
+    Remove-Item -Path "elaticsearch-8.10.2-windows-x86_64.zip" -ErrorAction SilentlyContinue | Out-Null
+    Remove-Item -Path "kibana-8.10.2" -Recurse -ErrorAction SilentlyContinue | Out-Null
+    Remove-Item -Path "elaticsearch-8.10.2" -Recurse -ErrorAction SilentlyContinue | Out-Null
+}
+function Get-Cleanup {
+    [CmdletBinding()]
+    param(
+        [string]$Question = "Do you need to clean up the system?"
+    )
+    $yes = [ChoiceDescription]::new('&yes', 'Cleaning up system')
+    $no = [ChoiceDescription]::new('&no',  'Not cleaning Up system')
+    
+    $options = [ChoiceDescription[]]($yes, $no)
+    $result = $host.ui.PromptForChoice($Title, $Question, $options, 0)
 
+    switch ($result) {
+        0 { 'Cleaning up System'
+        #When complete clean up
+        Get-cleanup
+    }
+        1 {'No cleaning up system'
+        write-host "Complete" -ForegroundColor Green}
+    }
+}
 function New-Menu {
     [CmdletBinding()]
     param(
@@ -523,3 +549,5 @@ cluster.initial_master_nodes: ["$masterNode"]
 # Calling the menu function. I do like this design.
 Write-Host ""
 New-Menu 
+write-host ""
+Get-cleanup
