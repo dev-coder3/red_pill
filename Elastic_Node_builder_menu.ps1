@@ -76,7 +76,7 @@ function Get-download_Kibana{
     $a  = Get-ChildItem $folder
     Copy-Item "$folder\$a" -Recurse -Destination "$env:SystemDrive\$a" -ErrorAction SilentlyContinue | Out-Null # This Kina fixes the issue. Failing to copy files to new location. Non-issue
 }
-function Get-cleanup {
+function Get-cleanup_action {
     Remove-Item -Path "kibana-8.10.2-windows-x86_64.zip" -ErrorAction SilentlyContinue | Out-Null
     Remove-Item -Path "elaticsearch-8.10.2-windows-x86_64.zip" -ErrorAction SilentlyContinue | Out-Null
     Remove-Item -Path "kibana-8.10.2" -Recurse -ErrorAction SilentlyContinue | Out-Null
@@ -96,7 +96,7 @@ function Get-Cleanup {
     switch ($result) {
         0 { 'Cleaning up System'
         #When complete clean up
-        Get-cleanup
+        Get-cleanup_action
     }
         1 {'No cleaning up system'
         write-host "Complete" -ForegroundColor Green}
@@ -235,16 +235,17 @@ Get-Configuration_elasticsearch
             Write-Host "Waiting for 30 seconds..."
             Start-Sleep -Seconds 30
         }
-    start-process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch-service-tokens create elastic/kibana AuthToken > Token.log"
+        $foldername =  "elasticsearch-8.10.2"
+        $workingDirectory = "$ENV:SystemDrive\$foldername\bin"
+        
+        start-process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch-service-tokens create elastic/kibana AuthToken > Token.log"
 
     $InputFile = "$workingDirectory\Token.log"
     $OutputFile = "$workingDirectory\Base43_token.log"
     
 
     if (-not (Test-Path -Path $OutputFile -PathType Leaf)) {
-        Write-Host "File does not exist. Creating the file..."
-        New-Item -Path $OutputFile -ItemType File
-        Write-Host "File created."
+        New-Item -Path $OutputFile -ItemType File | Out-Null
     } else {
         Write-Host "File already exists."
     }
@@ -574,7 +575,10 @@ cluster.initial_master_nodes: ["$masterNode"]
 
 } # End of menu function
 # Calling the menu function. I do like this design.
+
 Write-Host ""
+Write-Host "IF YOU HAVE RUN THIS SCRIPT BEFORE"
+Write-Host "You require a fresh install (Overwrite the files with non used ones)"
 New-Menu 
 write-host ""
 Get-cleanup
