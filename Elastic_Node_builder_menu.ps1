@@ -242,9 +242,10 @@ Get-Configuration_elasticsearch
         $foldername =  "elasticsearch-8.10.2"
         $workingDirectory = "$ENV:SystemDrive\$foldername\bin"
 # You only have one chance to get this correct MAKE THE CHANCE COUNT
-        start-process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch-service-tokens create elastic/kibana AuthToken > 'C:\Token.log'"
+        $filePath = "$ENV:SystemDrive\Token.log"
+        $command = "elasticsearch-service-tokens create elastic/kibana AuthToken"
 
-    $filePath = "$ENV:SystemDrive\Token.log"
+        Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command > $filePath" -WorkingDirectory $workingDirectory -Wait
 
 # Read the content of the text file
 $content = Get-Content -Path $filePath -Raw
