@@ -11,7 +11,6 @@ Have either the elasticsearch zip unziped and stored like this C:\elasticsearch-
 
 Make sure you have openssl installed. 
 https://slproweb.com/download/Win64OpenSSL_Light-3_1_3.exe
-maybe using start process 
 #>
 
 using namespace System.Management.Automation.Host
@@ -42,7 +41,6 @@ function Get-Configuration_elasticsearch {
             Start-Sleep -Seconds 30
         }
 
-    
         Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch-service.bat install"
     
         start-sleep -s 10
@@ -258,7 +256,7 @@ cluster.initial_master_nodes: ["$nodeName"]
 "@
 Get-Configuration_elasticsearch
    
-        Write-Host "SERVICE TOKEN TIME" -f Green
+        Write-Host "SERVICE TOKEN TIME" -ForegroundColor Green
         Write-Host ""
         Write-Host "Are you ready to continue ?"
         write-host""
@@ -277,7 +275,7 @@ Get-Configuration_elasticsearch
         Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command > $filePath" -WorkingDirectory $workingDirectory -Wait
 
 # Read the content of the text file
-$content = Get-Content -Path $filePath -Raw
+$content = Get-Content -Path $filePath -Raw | Out-Null
 
 # Define a regular expression pattern to match continuous alphanumeric strings
 $pattern = "[a-zA-Z0-9]+"
@@ -350,7 +348,7 @@ server.name: "$nodeName"
 # =================== System: Kibana Server (Optional) ===================
 # Enables SSL and paths to the PEM-format SSL certificate and SSL key files, respectively.
 # These settings enable SSL for outgoing requests from the Kibana server to the browser.
-#server.ssl.enabled: false
+server.ssl.enabled: true
 server.ssl.certificate: C:\kibana-8.10.2\config\root-ca.crt
 server.ssl.key: C:\kibana-8.10.2\config\root-ca.key
 
@@ -486,6 +484,8 @@ $foldername =  "kibana-8.10.2"
 $yamlFilePath = "$ENV:SystemDrive\$foldername\config\kibana.yml"
 $contentToAdd | Set-Content -Path $yamlFilePath
 Write-Host "YAML file has been personalized for KIBANA."
+$workingDirectory = "$ENV:SystemDrive\$foldername\bin"
+Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c kibana.bat"
 
 
     } # End of master option
