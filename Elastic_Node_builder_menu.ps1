@@ -107,7 +107,7 @@ foreach ($path in $opensslPaths) {
     }
 }
 $workingDirectory = $global:opensslInstallationPath
-Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c openssl req -x509 -newkey rsa:4096 -keyout `"C:\kibana-8.10.2\config\root-ca.key`" -out `"C:\kibana-8.10.2\config\root-ca.crt`" -days 3650"
+Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c openssl req -x509 -newkey rsa:4096 -keyout `"C:\kibana-8.10.2\config\root-ca.key`" -out `"C:\kibana-8.10.2\config\root-ca.crt`" -days 365"
 
 
 }
@@ -275,7 +275,7 @@ Get-Configuration_elasticsearch
         Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command > $filePath" -WorkingDirectory $workingDirectory -Wait
 
 # Read the content of the text file
-$content = Get-Content -Path $filePath -Raw | Out-Null
+$content = Get-Content -Path $filePath -Raw 
 
 # Define a regular expression pattern to match continuous alphanumeric strings
 $pattern = "[a-zA-Z0-9]+"
@@ -308,7 +308,7 @@ $longestString
     $a = "https://" + $ip+ ":9200" 
 #since the IP is a varable doesn't pass correctly
 # Add the kibana.yml file once the corrected config is in place. 
-# Need to get a working config first I have got 80% of what I need 
+# Need to get a working config first I have got 90% of what I need 
 # Missing points are the SSL (https) and the external conectivity
 Get-openssl
 $contentToAdd = @"
@@ -485,6 +485,7 @@ $yamlFilePath = "$ENV:SystemDrive\$foldername\config\kibana.yml"
 $contentToAdd | Set-Content -Path $yamlFilePath
 Write-Host "YAML file has been personalized for KIBANA."
 $workingDirectory = "$ENV:SystemDrive\$foldername\bin"
+start-sleep -s 5
 Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c kibana.bat"
 
 
@@ -612,5 +613,7 @@ cluster.initial_master_nodes: ["$masterNode"]
 Write-Host ""
 New-Menu 
 write-host ""
+start-sleep -s 5
 Get-cleanup
+Start-Sleep -s 5
 Invoke-Expression "services.msc"
