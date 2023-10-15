@@ -107,8 +107,10 @@ foreach ($path in $opensslPaths) {
     }
 }
 $workingDirectory = $global:opensslInstallationPath
-Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c openssl req -x509 -newkey rsa:4096 -keyout `"C:\kibana-8.10.2\config\root-ca.key`" -out `"C:\kibana-8.10.2\config\root-ca.crt`" -days 3650"
+Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c openssl req -x509 -newkey rsa:4096 -keyout `"C:\kibana-8.10.2\config\root-ca.key`" -out `"C:\kibana-8.10.2\config\root-ca.crt`" -days 3650" -Wait
+Start-Sleep -s 5
 Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c openssl req -x509 -newkey rsa:4096 -keyout `"C:\elasticsearch-8.10.2\config\certs\ca-private-key.key`" -out `"C:\elasticsearch-8.10.2\config\certs\ca-certificate.crt`" -days 3650" -Wait
+start-sleep -s 5
 Get-Content "C:\elasticsearch-8.10.2\config\certs\ca-private-key.key", "C:\elasticsearch-8.10.2\config\certs\ca-certificate.crt" | Set-Content -Path "C:\elasticsearch-8.10.2\config\certs\ca.pem" -Encoding utf8
 Write-Host "Certificate authority files generated and combined in ca.pem." -ForegroundColor Yellow
 }
