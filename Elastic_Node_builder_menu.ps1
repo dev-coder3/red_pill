@@ -107,8 +107,10 @@ foreach ($path in $opensslPaths) {
     }
 }
 $workingDirectory = $global:opensslInstallationPath
-Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c openssl req -x509 -newkey rsa:4096 -keyout `"C:\kibana-8.10.2\config\root-ca.key`" -out `"C:\kibana-8.10.2\config\root-ca.crt`" -days 365"
-
+Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c openssl req -x509 -newkey rsa:4096 -keyout `"C:\kibana-8.10.2\config\root-ca.key`" -out `"C:\kibana-8.10.2\config\root-ca.crt`" -days 3650"
+Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c openssl req -x509 -newkey rsa:4096 -keyout `"C:\elasticsearch-8.10.2\config\certs\ca-private-key.key`" -out `"C:\elasticsearch-8.10.2\config\certs\ca-certificate.crt`" -days 3650" -Wait
+Get-Content "C:\elasticsearch-8.10.2\config\certs\ca-private-key.key", "C:\elasticsearch-8.10.2\config\certs\ca-certificate.crt" | Set-Content -Path "C:\elasticsearch-8.10.2\config\certs\ca.pem" -Encoding utf8
+Write-Host "Certificate authority files generated and combined in ca.pem." -ForegroundColor Yellow
 }
 
 function Get-Cleanup {
@@ -255,7 +257,7 @@ cluster.initial_master_nodes: ["$nodeName"]
 "@
 Get-Configuration_elasticsearch
         start-sleep -s 10
-        Write-Host "SERVICE TOKEN TIME" -ForegroundColor Green
+        
         Write-Host ""
         Write-Host "Are you ready to continue ?"
         write-host""
@@ -272,7 +274,7 @@ Get-Configuration_elasticsearch
         $command = "elasticsearch-service-tokens create elastic/kibana AuthToken"
 
         Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command > $filePath" -WorkingDirectory $workingDirectory -Wait
-
+Write-Host "SERVICE TOKEN TIME" -ForegroundColor Green
 # Read the content of the text file
 $content = Get-Content -Path $filePath -Raw 
 
@@ -402,7 +404,7 @@ elasticsearch.serviceAccountToken: "$token"
 
 # Enables you to specify a path to the PEM file for the certificate
 # authority for your Elasticsearch instance.
-#elasticsearch.ssl.certificateAuthorities: [ "/path/to/your/CA.pem" ]
+#elasticsearch.ssl.certificateAuthorities: [ "C:\elasticsearch-8.10.2\config\certs\ca.pem" ]
 
 # To disregard the validity of SSL certificates, change this setting's value to 'none'.
 #elasticsearch.ssl.verificationMode: none
