@@ -8,6 +8,10 @@ Have either the elasticsearch zip unziped and stored like this C:\elasticsearch-
 
 "IF YOU HAVE RUN THIS SCRIPT BEFORE"
 "You require a fresh install (Overwrite the files with non used ones)"
+
+Make sure you have openssl installed. 
+https://slproweb.com/download/Win64OpenSSL_Light-3_1_3.exe
+maybe using start process 
 #>
 
 using namespace System.Management.Automation.Host
@@ -85,6 +89,31 @@ function Get-cleanup_action {
     Remove-Item -Path "kibana-8.10.2" -Recurse -ErrorAction SilentlyContinue | Out-Null
     Remove-Item -Path "elaticsearch-8.10.2" -Recurse -ErrorAction SilentlyContinue | Out-Null
 }
+function Get-openssl{
+    # List of potential installation paths
+$opensslPaths = @(
+    "C:\Program Files",
+    "C:\Program Files (x86)",
+    "C:\"
+)
+# Initialize a global variable to store the OpenSSL path
+$global:opensslInstallationPath = $null
+# Iterate through potential paths and search for OpenSSL
+foreach ($path in $opensslPaths) {
+    if (Test-Path -Path $path -PathType Container) {
+        $opensslPath = Get-ChildItem $path -Recurse -Filter 'openssl.exe' | Select-Object -First 1 -ExpandProperty DirectoryName
+        if ($opensslPath -ne $null) {
+            $global:opensslInstallationPath = $opensslPath
+            break  # Found OpenSSL, no need to continue searching
+        }
+    }
+}
+$workingDirectory = $global:opensslInstallationPath
+Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c openssl req -x509 -newkey rsa:4096 -keyout `"C:\kibana-8.10.2\config\root-ca.key`" -out `"C:\kibana-8.10.2\config\root-ca.crt`" -days 3650"
+
+
+}
+
 function Get-Cleanup {
     [CmdletBinding()]
     param(
@@ -283,6 +312,7 @@ $longestString
 # Add the kibana.yml file once the corrected config is in place. 
 # Need to get a working config first I have got 80% of what I need 
 # Missing points are the SSL (https) and the external conectivity
+Get-openssl
 $contentToAdd = @"
 # For more configuration options see the configuration guide for Kibana in
 # https://www.elastic.co/guide/index.html
@@ -321,8 +351,8 @@ server.name: "$nodeName"
 # Enables SSL and paths to the PEM-format SSL certificate and SSL key files, respectively.
 # These settings enable SSL for outgoing requests from the Kibana server to the browser.
 #server.ssl.enabled: false
-#server.ssl.certificate: /path/to/your/server.crt
-#server.ssl.key: /path/to/your/server.key
+server.ssl.certificate: C:\kibana-8.10.2\config\root-ca.crt
+server.ssl.key: C:\kibana-8.10.2\config\root-ca.key
 
 # =================== System: Elasticsearch ===================
 # The URLs of the Elasticsearch instances to use for all your queries.
@@ -378,7 +408,7 @@ elasticsearch.serviceAccountToken: "$token"
 #elasticsearch.ssl.certificateAuthorities: [ "/path/to/your/CA.pem" ]
 
 # To disregard the validity of SSL certificates, change this setting's value to 'none'.
-#elasticsearch.ssl.verificationMode: full
+elasticsearch.ssl.verificationMode: none
 
 # =================== System: Logging ===================
 # Set the value of this setting to off to suppress all logging output, or to debug to log everything. Defaults to 'info'
@@ -583,3 +613,4 @@ Write-Host ""
 New-Menu 
 write-host ""
 Get-cleanup
+Invoke-Expression "services.msc"
