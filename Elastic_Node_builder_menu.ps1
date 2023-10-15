@@ -255,7 +255,7 @@ cluster.initial_master_nodes: ["$nodeName"]
 #action.destructive_requires_name: false 
 "@
 Get-Configuration_elasticsearch
-   
+        start-sleep -s 10
         Write-Host "SERVICE TOKEN TIME" -ForegroundColor Green
         Write-Host ""
         Write-Host "Are you ready to continue ?"
