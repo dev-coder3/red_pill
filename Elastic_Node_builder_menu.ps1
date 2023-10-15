@@ -302,7 +302,7 @@ $longestString
 
     start-sleep -s 10
     $token = $longestString
-   
+
     $ip = Read-Host "Enter IP address for kibana 'Default(0.0.0.0)'"
         if ([string]::IsNullOrWhiteSpace($ip)) {
             $ip = "0.0.0.0"
@@ -314,6 +314,10 @@ $longestString
 # Need to get a working config first I have got 90% of what I need 
 # Missing points are the SSL (https) and the external conectivity
 Get-openssl
+start-sleep -s 10
+Write-Host ""
+Write-Host "Enter Same password from the Openssl" -ForegroundColor Yellow
+$keyphrase = Read-Host "Enter Key Phrase:"
 $contentToAdd = @"
 # For more configuration options see the configuration guide for Kibana in
 # https://www.elastic.co/guide/index.html
@@ -354,7 +358,7 @@ server.name: "$nodeName"
 server.ssl.enabled: true
 server.ssl.certificate: C:\kibana-8.10.2\config\root-ca.crt
 server.ssl.key: C:\kibana-8.10.2\config\root-ca.key
-
+server.ssl.keyPassphrase: "$keyphrase"
 # =================== System: Elasticsearch ===================
 # The URLs of the Elasticsearch instances to use for all your queries.
 elasticsearch.hosts: ["$a"]
@@ -406,7 +410,7 @@ elasticsearch.serviceAccountToken: "$token"
 
 # Enables you to specify a path to the PEM file for the certificate
 # authority for your Elasticsearch instance.
-#elasticsearch.ssl.certificateAuthorities: [ "C:\elasticsearch-8.10.2\config\certs\ca.pem" ]
+elasticsearch.ssl.certificateAuthorities: [ "C:\elasticsearch-8.10.2\config\certs\ca.pem" ]
 
 # To disregard the validity of SSL certificates, change this setting's value to 'none'.
 #elasticsearch.ssl.verificationMode: none
