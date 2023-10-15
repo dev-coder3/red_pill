@@ -5,6 +5,9 @@ VERSION Warning 8.10.2 ONLY
 WARNING this ONLY works with a one (1) master node NOT two(2) master nodes
 
 Have either the elasticsearch zip unziped and stored like this C:\elasticsearch-8.10.2 with the next folder down being the config,bin and log folders.
+
+"IF YOU HAVE RUN THIS SCRIPT BEFORE"
+"You require a fresh install (Overwrite the files with non used ones)"
 #>
 
 using namespace System.Management.Automation.Host
@@ -91,7 +94,7 @@ function Get-Cleanup {
     $no = [ChoiceDescription]::new('&no',  'Not cleaning Up system')
     
     $options = [ChoiceDescription[]]($yes, $no)
-    $result = $host.ui.PromptForChoice($Title, $Question, $options, 0)
+    $result = $host.ui.PromptForChoice($Title, $Question, $options, 1)
 
     switch ($result) {
         0 { 'Cleaning up System'
@@ -227,7 +230,7 @@ xpack.security.transport.ssl.enabled: true
 "@
 Get-Configuration_elasticsearch
    
-        Write-Host "Sevice TOKEN TIME" -f Green
+        Write-Host "SERVICE TOKEN TIME" -f Green
         Write-Host ""
         Write-Host "Are you ready to continue ?"
         write-host""
@@ -240,9 +243,9 @@ Get-Configuration_elasticsearch
         $foldername =  "elasticsearch-8.10.2"
         $workingDirectory = "$ENV:SystemDrive\$foldername\bin"
 # You only have one chance to get this correct MAKE THE CHANCE COUNT
-        start-process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch-service-tokens create elastic/kibana AuthToken > $ENV:SystemDrive\Token.log"
+        start-process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch-service-tokens create elastic/kibana AuthToken > 'C:\Token.log'"
 
-    $filePath = "$workingDirectory\Token.log"
+    $filePath = "$ENV:SystemDrive\Token.log"
 
 # Read the content of the text file
 $content = Get-Content -Path $filePath -Raw
@@ -454,6 +457,7 @@ $yamlFilePath = "$ENV:SystemDrive\$foldername\config\kibana.yml"
 $contentToAdd | Set-Content -Path $yamlFilePath
 Write-Host "YAML file has been personalized for KIBANA."
 
+
     } # End of master option
         1 { 'Steps for data node' 
         $download = Read-Host -Prompt "Do you need to download the elasticsearch zip? yes / no"
@@ -573,13 +577,9 @@ cluster.initial_master_nodes: ["$masterNode"]
 
     } # End of Data option
     }
-
 } # End of menu function
 # Calling the menu function. I do like this design.
-
 Write-Host ""
-Write-Host "IF YOU HAVE RUN THIS SCRIPT BEFORE"
-Write-Host "You require a fresh install (Overwrite the files with non used ones)"
 New-Menu 
 write-host ""
 Get-cleanup
