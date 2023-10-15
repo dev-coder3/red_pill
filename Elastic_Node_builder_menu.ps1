@@ -317,7 +317,7 @@ Get-openssl
 start-sleep -s 10
 Write-Host ""
 Write-Host "Enter Same password from the Openssl" -ForegroundColor Yellow
-$keyphrase = Read-Host "Enter Key Phrase:"
+$keyphrase = Read-Host "Enter Key Phrase: "
 $contentToAdd = @"
 # For more configuration options see the configuration guide for Kibana in
 # https://www.elastic.co/guide/index.html
@@ -493,7 +493,12 @@ $contentToAdd | Set-Content -Path $yamlFilePath
 Write-Host "YAML file has been personalized for KIBANA."
 $workingDirectory = "$ENV:SystemDrive\$foldername\bin"
 start-sleep -s 5
-Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c kibana.bat"
+Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c kibana.bat" -NoExit
+Start-Sleep -s 5 
+# Creating Schedule task for Kibana for on boot
+$action = New-ScheduledTaskAction -Execute '$workingDirectory\kibana.bat'
+$trigger = New-ScheduledTaskTrigger -AtStartup
+Register-ScheduledTask -TaskName "Kibana" -Action $action -Trigger $trigger -User "NT AUTHORITY\SYSTEM" -Force
 
 
     } # End of master option
