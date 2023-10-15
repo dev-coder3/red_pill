@@ -493,7 +493,7 @@ $contentToAdd | Set-Content -Path $yamlFilePath
 Write-Host "YAML file has been personalized for KIBANA."
 $workingDirectory = "$ENV:SystemDrive\$foldername\bin"
 start-sleep -s 5
-Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c kibana.bat" -NoExit
+Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c kibana.bat" 
 Start-Sleep -s 5 
 # Creating Schedule task for Kibana for on boot
 $action = New-ScheduledTaskAction -Execute '$workingDirectory\kibana.bat'
