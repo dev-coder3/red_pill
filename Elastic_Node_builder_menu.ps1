@@ -496,10 +496,11 @@ start-sleep -s 5
 Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c kibana.bat" 
 Start-Sleep -s 5 
 # Creating Schedule task for Kibana for on boot
-$action = New-ScheduledTaskAction -Execute '$workingDirectory\kibana.bat'
+$action = New-ScheduledTaskAction -Execute "$workingDirectory\kibana.bat"
 $trigger = New-ScheduledTaskTrigger -AtStartup
+$trigger.Delay = New-TimeSpan -Seconds 10 # Should not get any errors from elasticsearch not running
 Register-ScheduledTask -TaskName "Kibana" -Action $action -Trigger $trigger -User "NT AUTHORITY\SYSTEM" -Force
-
+Start-ScheduledTask -TaskName "Kibana"
 
     } # End of master option
         1 { 'Steps for data node' 
