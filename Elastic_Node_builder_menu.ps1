@@ -109,7 +109,6 @@ foreach ($path in $opensslPaths) {
 $workingDirectory = $global:opensslInstallationPath
 Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c openssl req -x509 -newkey rsa:4096 -keyout `"C:\kibana-8.10.2\config\root-ca.key`" -out `"C:\kibana-8.10.2\config\root-ca.crt`" -days 365"
 
-
 }
 
 function Get-Cleanup {
@@ -406,7 +405,7 @@ elasticsearch.serviceAccountToken: "$token"
 #elasticsearch.ssl.certificateAuthorities: [ "/path/to/your/CA.pem" ]
 
 # To disregard the validity of SSL certificates, change this setting's value to 'none'.
-elasticsearch.ssl.verificationMode: none
+#elasticsearch.ssl.verificationMode: none
 
 # =================== System: Logging ===================
 # Set the value of this setting to off to suppress all logging output, or to debug to log everything. Defaults to 'info'
