@@ -393,7 +393,7 @@ elasticsearch.serviceAccountToken: "$token"
 
 # List of Kibana client-side headers to send to Elasticsearch. To send *no* client-side
 # headers, set this value to [] (an empty list).
-#elasticsearch.requestHeadersWhitelist: [ authorization ]
+#elasticsearch.requestHeadersWhitelist: [ authori/zation ]
 
 # Header names and values that are sent to Elasticsearch. Any custom headers cannot be overwritten
 # by client-side headers, regardless of the elasticsearch.requestHeadersWhitelist configuration.
@@ -410,7 +410,7 @@ elasticsearch.serviceAccountToken: "$token"
 
 # Enables you to specify a path to the PEM file for the certificate
 # authority for your Elasticsearch instance.
-elasticsearch.ssl.certificateAuthorities: [ "C:\elasticsearch-8.10.2\config\certs\ca.pem" ]
+elasticsearch.ssl.certificateAuthorities: [ "C:/elasticsearch-8.10.2/config/certs/ca.pem" ]
 
 # To disregard the validity of SSL certificates, change this setting's value to 'none'.
 #elasticsearch.ssl.verificationMode: none
