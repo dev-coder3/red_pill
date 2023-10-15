@@ -220,12 +220,13 @@ cluster.initial_master_nodes: ["$nodeName"]
 # ---------------------------------- Various -----------------------------------
 #
 xpack.security.transport.ssl.enabled: true
+#
 # Allow wildcard deletion of indices:
 #
 #action.destructive_requires_name: false 
 "@
 Get-Configuration_elasticsearch
-    
+   
         Write-Host "Sevice TOKEN TIME" -f Green
         Write-Host ""
         Write-Host "Are you ready to continue ?"
@@ -238,37 +239,36 @@ Get-Configuration_elasticsearch
         }
         $foldername =  "elasticsearch-8.10.2"
         $workingDirectory = "$ENV:SystemDrive\$foldername\bin"
+# You only have one chance to get this correct MAKE THE CHANCE COUNT
+        start-process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch-service-tokens create elastic/kibana AuthToken > $ENV:SystemDrive\Token.log"
 
-        start-process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch-service-tokens create elastic/kibana AuthToken > Token.log"
+    $filePath = "$workingDirectory\Token.log"
 
-    $InputFile = "$workingDirectory\Token.log"
-    $OutputFile = "$workingDirectory\Base43_token.log"
-    
+# Read the content of the text file
+$content = Get-Content -Path $filePath -Raw
 
-    if (-not (Test-Path -Path $OutputFile -PathType Leaf)) {
-        New-Item -Path $OutputFile -ItemType File | Out-Null
-    } else {
-        Write-Host "File already exists."
+# Define a regular expression pattern to match continuous alphanumeric strings
+$pattern = "[a-zA-Z0-9]+"
+
+# Find all matches of the pattern in the content
+$matches_reg = [regex]::Matches($content, $pattern)
+
+# Initialize variables to store the longest string and its length
+$longestString = ""
+$longestStringLength = 0
+
+# Loop through the matches and find the longest one
+foreach ($match in $matches_reg) {
+    if ($match.Length -gt $longestStringLength) {
+        $longestString = $match.Value
+        $longestStringLength = $match.Length
     }
-
-    Write-Host "Setting Configurations for Kibana" -ForegroundColor Cyan
-    # Check if the input file exists
-    if (Test-Path $InputFile) {
-        # Read the content of the input file
-        $Content = Get-Content $InputFile
-
-        # Use regex to find and extract base64 strings
-        $Base64Strings = [regex]::Matches($Content, '[A-Za-z0-9+/]+={0,2}')
-
-        # Save the base64 strings to the output file
-        $Base64Strings | ForEach-Object { $_.Value | Out-File -Append $OutputFile }
-
-        Write-Host "The token was extracted and saved to $OutputFile."
-    } else { write-host "Need to enter the Token into the kibana.yml file"}
-    write-host ""
+}
+# Save the longest string as a variable
+$longestString
 
     start-sleep -s 10
-    $token = Get-content $OutputFile # Remember names of var
+    $token = $longestString
    
     $ip = Read-Host "Enter IP address for kibana 'Default(0.0.0.0)'"
         if ([string]::IsNullOrWhiteSpace($ip)) {
@@ -312,7 +312,7 @@ server.host: "$networkHost"
 #server.maxPayload: 1048576
 
 # The Kibana server's name. This is used for display purposes.
-#server.name: "your-hostname"
+server.name: "$nodeName"
 
 # =================== System: Kibana Server (Optional) ===================
 # Enables SSL and paths to the PEM-format SSL certificate and SSL key files, respectively.
