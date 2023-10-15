@@ -222,7 +222,6 @@ cluster.initial_master_nodes: ["$nodeName"]
 #
 # ---------------------------------- Various -----------------------------------
 #
-xpack.security.transport.ssl.enabled: true
 #
 # Allow wildcard deletion of indices:
 #
