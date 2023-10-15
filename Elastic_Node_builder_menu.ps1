@@ -1,5 +1,5 @@
-#Elastic Node builder
 <#
+Elastic Node builder
 VERSION Warning 8.10.2 ONLY 
 
 WARNING this ONLY works with a one (1) master node NOT two(2) master nodes
@@ -12,19 +12,14 @@ Have either the elasticsearch zip unziped and stored like this C:\elasticsearch-
 Make sure you have openssl installed. 
 https://slproweb.com/download/Win64OpenSSL_Light-3_1_3.exe
 #>
-
 using namespace System.Management.Automation.Host
-
 function Get-Configuration_elasticsearch {
     $foldername =  "elasticsearch-8.10.2"
         $yamlFilePath = "$ENV:SystemDrive\$foldername\config\elasticsearch.yml"
         $contentToAdd | Set-Content -Path $yamlFilePath
         Write-Host "YAML file has been personalized."
-    
         write-host "Now running elasticseach.bat"
-    
         $workingDirectory = "$ENV:SystemDrive\$foldername\bin"
-        
         Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch.bat"
         # make the sleep a loop every 10 secs to print the same message
         # Trying to stop error happening with starting service that doesn't exsist
@@ -35,14 +30,11 @@ function Get-Configuration_elasticsearch {
         Write-Host "Has the Install finished from the cmd.exe window"
         write-host""
         $answer = Read-Host "If so, press Enter. If NOT, type 'no' and press Enter..."
-
         if ($answer -eq "no") {
             Write-Host "Waiting for 30 seconds..."
             Start-Sleep -Seconds 30
         }
-
         Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch-service.bat install"
-    
         start-sleep -s 10
         write-host ""
         write-host "Checking........" -ForegroundColor Yellow
@@ -55,15 +47,14 @@ function Get-Configuration_elasticsearch {
             Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch-service.bat install"
         }
         start-sleep -s 10
-        Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch-service.bat start"
+        Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch-service.bat start" -Wait
         Set-Service -Name elasticsearch-service-x64 -StartupType Automatic
         Write-Host "Changing the auto generated password..."
         Write-Host ""
         start-sleep -s 10
-        Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch-reset-password.bat -u elastic -i" 
+        Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch-reset-password.bat -u elastic -i" -Wait
         # User needs to remember the password as currently I dont save outputs because I dont want too
     }
-
 function Get-download_Elastic{
     Write-Host "Preparing to download and install Elasticsearch..." -ForegroundColor Cyan
     Invoke-WebRequest "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.10.2-windows-x86_64.zip" -OutFile "elasticsearch-8.10.2-windows-x86_64.zip" | Out-Null 
@@ -114,7 +105,6 @@ start-sleep -s 5
 Get-Content "C:\elasticsearch-8.10.2\config\certs\ca-private-key.key", "C:\elasticsearch-8.10.2\config\certs\ca-certificate.crt" | Set-Content -Path "C:\elasticsearch-8.10.2\config\certs\ca.pem" -Encoding utf8
 Write-Host "Certificate authority files generated and combined in ca.pem." -ForegroundColor Yellow
 }
-
 function Get-Cleanup {
     [CmdletBinding()]
     param(
@@ -257,67 +247,56 @@ cluster.initial_master_nodes: ["$nodeName"]
 #
 #action.destructive_requires_name: false 
 "@
-Get-Configuration_elasticsearch
+        Get-Configuration_elasticsearch
         start-sleep -s 10
-        
-        Write-Host ""
-        Write-Host "Are you ready to continue ?"
-        write-host""
-        $answer = Read-Host "If so, press Enter. If NOT, type 'no' and press Enter..."
-
-        if ($answer -eq "no") {
-            Write-Host "Waiting for 30 seconds..."
-            Start-Sleep -Seconds 30
-        }
         $foldername =  "elasticsearch-8.10.2"
         $workingDirectory = "$ENV:SystemDrive\$foldername\bin"
-# You only have one chance to get this correct MAKE THE CHANCE COUNT
+        # You only have one chance to get this correct MAKE THE CHANCE COUNT
         $filePath = "$ENV:SystemDrive\Token.log"
         $command = "elasticsearch-service-tokens create elastic/kibana AuthToken"
 
         Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command > $filePath" -WorkingDirectory $workingDirectory -Wait
-Write-Host "SERVICE TOKEN TIME" -ForegroundColor Green
-# Read the content of the text file
-$content = Get-Content -Path $filePath -Raw 
+        Write-Host "SERVICE TOKEN" -ForegroundColor Green
+        # Read the content of the text file
+        $content = Get-Content -Path $filePath -Raw 
 
-# Define a regular expression pattern to match continuous alphanumeric strings
-$pattern = "[a-zA-Z0-9]+"
+        # Define a regular expression pattern to match continuous alphanumeric strings
+        $pattern = "[a-zA-Z0-9]+"
 
-# Find all matches of the pattern in the content
-$matches_reg = [regex]::Matches($content, $pattern)
+        # Find all matches of the pattern in the content
+        $matches_reg = [regex]::Matches($content, $pattern)
 
-# Initialize variables to store the longest string and its length
-$longestString = ""
-$longestStringLength = 0
+        # Initialize variables to store the longest string and its length
+        $longestString = ""
+        $longestStringLength = 0
 
-# Loop through the matches and find the longest one
-foreach ($match in $matches_reg) {
-    if ($match.Length -gt $longestStringLength) {
-        $longestString = $match.Value
-        $longestStringLength = $match.Length
-    }
-}
-# Save the longest string as a variable
-$longestString
-
-    start-sleep -s 10
-    $token = $longestString
-
-    $ip = Read-Host "Enter IP address for kibana 'Default(0.0.0.0)'"
-        if ([string]::IsNullOrWhiteSpace($ip)) {
-            $ip = "0.0.0.0"
+        # Loop through the matches and find the longest one
+        foreach ($match in $matches_reg) {
+            if ($match.Length -gt $longestStringLength) {
+                $longestString = $match.Value
+                $longestStringLength = $match.Length
+            }
         }
-    Write-Host "IP Address: $ip"
-    $a = "https://" + $ip+ ":9200" 
-#since the IP is a varable doesn't pass correctly
-# Add the kibana.yml file once the corrected config is in place. 
-# Need to get a working config first I have got 90% of what I need 
-# Missing points are the SSL (https) and the external conectivity
-Get-openssl
-start-sleep -s 10
-Write-Host ""
-Write-Host "Enter Same password from the Openssl" -ForegroundColor Yellow
-$keyphrase = Read-Host "Enter Key Phrase: "
+        # Save the longest string as a variable
+        $longestString
+        start-sleep -s 10
+        $token = $longestString
+
+        $ip = Read-Host "Enter IP address for kibana 'Default(0.0.0.0)'"
+            if ([string]::IsNullOrWhiteSpace($ip)) {
+                $ip = "0.0.0.0"
+            }
+        Write-Host "IP Address: $ip"
+        $a = "https://" + $ip+ ":9200" 
+        #since the IP is a varable doesn't pass correctly
+        # Add the kibana.yml file once the corrected config is in place. 
+        # Need to get a working config first I have got 90% of what I need 
+        # Missing points are the SSL (https) and the external conectivity
+        Get-openssl
+        start-sleep -s 10
+        Write-Host ""
+        Write-Host "Enter Same password from the Openssl" -ForegroundColor Yellow
+        $keyphrase = Read-Host "Enter Key Phrase: "
 $contentToAdd = @"
 # For more configuration options see the configuration guide for Kibana in
 # https://www.elastic.co/guide/index.html
@@ -485,22 +464,21 @@ elasticsearch.ssl.verificationMode: none
 # Maximum number of documents loaded by each shard to generate autocomplete suggestions.
 # This value must be a whole number greater than zero. Defaults to 100_000
 #unifiedSearch.autocomplete.valueSuggestions.terminateAfter: 100000
-
 "@
-$foldername =  "kibana-8.10.2"
-$yamlFilePath = "$ENV:SystemDrive\$foldername\config\kibana.yml"
-$contentToAdd | Set-Content -Path $yamlFilePath
-Write-Host "YAML file has been personalized for KIBANA."
-$workingDirectory = "$ENV:SystemDrive\$foldername\bin"
-start-sleep -s 5
-Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c kibana.bat" 
-Start-Sleep -s 5 
-# Creating Schedule task for Kibana for on boot
-$action = New-ScheduledTaskAction -Execute "$workingDirectory\kibana.bat"
-$trigger = New-ScheduledTaskTrigger -AtStartup
-$trigger.Delay = New-TimeSpan -Seconds 10 # Should not get any errors from elasticsearch not running
-Register-ScheduledTask -TaskName "Kibana" -Action $action -Trigger $trigger -User "NT AUTHORITY\SYSTEM" -Force
-Start-ScheduledTask -TaskName "Kibana"
+        $foldername =  "kibana-8.10.2"
+        $yamlFilePath = "$ENV:SystemDrive\$foldername\config\kibana.yml"
+        $contentToAdd | Set-Content -Path $yamlFilePath
+        Write-Host "YAML file has been personalized for KIBANA."
+        $workingDirectory = "$ENV:SystemDrive\$foldername\bin"
+        start-sleep -s 5
+        Start-Process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c kibana.bat" 
+        Start-Sleep -s 5 
+        # Creating Schedule task for Kibana for on boot
+        $action = New-ScheduledTaskAction -Execute "$workingDirectory\kibana.bat"
+        $trigger = New-ScheduledTaskTrigger -AtStartup
+        $trigger.Delay = New-TimeSpan -Seconds 10 # Should not get any errors from elasticsearch not running
+        Register-ScheduledTask -TaskName "Kibana" -Action $action -Trigger $trigger -User "NT AUTHORITY\SYSTEM" -Force
+        Start-ScheduledTask -TaskName "Kibana"
 
     } # End of master option
         1 { 'Steps for data node' 
@@ -510,7 +488,6 @@ Start-ScheduledTask -TaskName "Kibana"
         write-host ""
         Write-Host "Creating ONLY ELASTICSEARCH" -ForegroundColor DarkRed
         Write-Host ""
-
         $clusterName = Read-Host "Enter cluster name 'Default(dev)'"
         if ([string]::IsNullOrWhiteSpace($clusterName)) {
             $clusterName = "dev"
@@ -533,7 +510,6 @@ Start-ScheduledTask -TaskName "Kibana"
         Write-Host "Master Node: $MasterNose"
 
     $contentToAdd = @"
-
 # ======================== Elasticsearch Configuration =========================
 #
 # NOTE: Elasticsearch comes with reasonable defaults for most settings.
@@ -617,9 +593,8 @@ cluster.initial_master_nodes: ["$masterNode"]
 #
 #action.destructive_requires_name: false 
 "@
-    Get-Configuration_elasticsearch
-
-    } # End of Data option
+        Get-Configuration_elasticsearch
+        } # End of Data option
     }
 } # End of menu function
 # Calling the menu function. I do like this design.
@@ -629,4 +604,6 @@ write-host ""
 start-sleep -s 5
 Get-cleanup
 Start-Sleep -s 5
+Write-Host "Opening Services and task scheduler" -ForegroundColor Yellow
 Invoke-Expression "services.msc"
+Invoke-Expression "taskschd.msc"
