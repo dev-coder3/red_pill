@@ -225,7 +225,7 @@ cluster.initial_master_nodes: ["$nodeName"]
 "@
 Get-Configuration_elasticsearch
     
-
+        Write-Host "Sevice TOKEN TIME" -f Green
         Write-Host ""
         Write-Host "Are you ready to continue ?"
         write-host""
@@ -237,7 +237,7 @@ Get-Configuration_elasticsearch
         }
         $foldername =  "elasticsearch-8.10.2"
         $workingDirectory = "$ENV:SystemDrive\$foldername\bin"
-        
+
         start-process -FilePath "cmd.exe" -WorkingDirectory $workingDirectory -ArgumentList "/c elasticsearch-service-tokens create elastic/kibana AuthToken > Token.log"
 
     $InputFile = "$workingDirectory\Token.log"
@@ -267,7 +267,7 @@ Get-Configuration_elasticsearch
     write-host ""
 
     start-sleep -s 10
-    $token = Get-content $OutFile
+    $token = Get-content $OutputFile # Remember names of var
    
     $ip = Read-Host "Enter IP address for kibana 'Default(0.0.0.0)'"
         if ([string]::IsNullOrWhiteSpace($ip)) {
