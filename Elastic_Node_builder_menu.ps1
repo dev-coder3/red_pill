@@ -413,7 +413,7 @@ elasticsearch.serviceAccountToken: "$token"
 elasticsearch.ssl.certificateAuthorities: [ "C:/elasticsearch-8.10.2/config/certs/ca.pem" ]
 
 # To disregard the validity of SSL certificates, change this setting's value to 'none'.
-#elasticsearch.ssl.verificationMode: none
+elasticsearch.ssl.verificationMode: none
 
 # =================== System: Logging ===================
 # Set the value of this setting to off to suppress all logging output, or to debug to log everything. Defaults to 'info'
